@@ -1,0 +1,15 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn psycopg2-binary
+
+COPY . .
+
+EXPOSE 8001
+
+CMD ["sh", "-c", "python manage.py migrate && python seed_data.py && gunicorn --bind 0.0.0.0:8001 app1.wsgi:application"]

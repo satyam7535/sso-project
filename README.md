@@ -89,6 +89,35 @@ python manage.py runserver 8002
 
 ---
 
+## 🐳 Docker Deployment (Recommended Quickstart)
+
+The entire microservices architecture has been containerized and pushed to Docker Hub. This is the fastest way to run the project on any machine without manually setting up Python environments or databases.
+
+### 1. Prerequisites
+Ensure you have [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose installed.
+
+### 2. Run the Platform
+Using the provided `docker-compose.hub.yml`, you can pull the pre-built images (`kesharisatyam/sso-auth-service`, `sso-app1`, `sso-app2`) directly from Docker Hub.
+
+```bash
+# Start all microservices and the PostgreSQL database in detached mode
+docker-compose -f docker-compose.hub.yml up -d
+```
+
+### 3. Access the Services
+Once the containers are running, the services will be available at:
+*   **App 1 (Main UI & Login):** `http://localhost:8001`
+*   **App 2 (Protected App):** `http://localhost:8002`
+*   **Auth Service (API):** `http://localhost:8000`
+
+### 4. Stop the Services
+To stop and clean up the containers:
+```bash
+docker-compose -f docker-compose.hub.yml down
+```
+
+---
+
 ## ☁️ AWS Deployment Setup (Cloud-Native)
 
 The deployment architecture uses one RDS instance for the database and three separate EC2 instances for the services.

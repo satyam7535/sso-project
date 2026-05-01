@@ -1,0 +1,60 @@
+# SSO Microservices - Pull from Docker Hub & Run
+# Usage: docker-compose -f docker-compose.hub.yml up
+# This file uses pre-built images from Docker Hub (no local build needed)
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: sso_user
+      POSTGRES_PASSWORD: sso_password
+      POSTGRES_DB: sso_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  auth-service:
+    image: kesharisatyam/sso-auth-service:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://sso_user:sso_password@db:5432/sso_db
+      - DEBUG=False
+      - ALLOWED_HOSTS=*
+      - TOKEN_EXPIRY_MINUTES=30
+      - INTERNAL_SSO_KEY=your-internal-sso-key-here
+    depends_on:
+      - db
+
+  app1:
+    image: kesharisatyam/sso-app1:latest
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgres://sso_user:sso_password@db:5432/sso_db
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - APP2_URL=http://127.0.0.1:8002
+      - SSO_COOKIE_DOMAIN=localhost
+      - INTERNAL_SSO_KEY=your-internal-sso-key-here
+      - SITE_DOMAIN=127.0.0.1:8001
+    depends_on:
+      - auth-service
+
+  app2:
+    image: kesharisatyam/sso-app2:latest
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgres://sso_user:sso_password@db:5432/sso_db
+      - DEBUG=False
+      - ALLOWED_HOSTS=*
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - APP1_LOGIN_URL=http://127.0.0.1:8001/login/
+    depends_on:
+      - auth-service
+
+volumes:
+  postgres_data:
